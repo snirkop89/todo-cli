@@ -22,9 +22,15 @@ func parseTask(task string) (Todo, error) {
 			}
 			todo.DueDate = parseDueDate(parts[1])
 		case strings.HasPrefix(p, "#"):
-			fmt.Println("found tag")
+			todo.Tags = append(todo.Tags, p)
 		case strings.HasPrefix(p, "pri"):
-			fmt.Println("found priority")
+			parts := strings.Split(p, ":")
+			if len(parts) != 2 {
+				return Todo{}, errors.New("invalid due date format. use due:xxx")
+			}
+			if err := todo.SetPriority(parts[1]); err != nil {
+				return Todo{}, err
+			}
 		case strings.HasPrefix(p, "@"):
 			fmt.Println("found context")
 		}

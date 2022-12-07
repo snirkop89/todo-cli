@@ -3,6 +3,7 @@ package todo
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -46,6 +47,7 @@ func (t *TodoManager) Add(task string) error {
 
 	todo.ID = t.MaxID() + 1
 	todo.UUID = guid.String()
+	todo.CreatedAt = time.Now()
 
 	t.Todos = append(t.Todos, &todo)
 	if err := t.repo.Save(t.Todos); err != nil {
@@ -86,13 +88,15 @@ func (t *TodoManager) Edit(id int, subject string) error {
 // by default unless provided all
 // TODO allow deleting range
 // Delete removes a task from the list completely.
-func (t *TodoManager) Delete(id int) error {
-	if id <= 0 || id > t.MaxID() {
-		return fmt.Errorf("invalid id: %d", id)
-	}
+func (t *TodoManager) Delete(ids ...int) error {
+	for _, id := range ids {
+		if id <= 0 || id > t.MaxID() {
+			return fmt.Errorf("invalid id: %d", id)
+		}
 
-	idx := t.indexByID(id)
-	t.Todos = append(t.Todos[:idx], t.Todos[idx+1:]...)
+		idx := t.indexByID(id)
+		t.Todos = append(t.Todos[:idx], t.Todos[idx+1:]...)
+	}
 
 	return t.repo.Save(t.Todos)
 }

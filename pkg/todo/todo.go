@@ -99,6 +99,8 @@ func (t *Todo) SetPriority(pri string) error {
 		t.Priority = high
 	case "u", "urgent":
 		t.Priority = urgent
+	default:
+		return errors.New("unknown priority")
 	}
-	return errors.New("unknown priority")
+	return nil
 }
