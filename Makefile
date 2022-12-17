@@ -5,3 +5,7 @@ run/todo:
 .PHONY: build
 build:
 	@go build ./cmd/todo
+
+.PHONY: test
+test:
+	@go test -v ./...

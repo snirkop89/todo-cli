@@ -12,6 +12,7 @@ import (
 type TodoManager struct {
 	repo  repository
 	Todos []*Todo
+	eow   time.Weekday
 	Out   io.Writer
 }
 
@@ -23,6 +24,7 @@ type repository interface {
 // New manager returns a new TodoManager.
 func NewManager(repo repository) (*TodoManager, error) {
 	tm := &TodoManager{
+		eow:  time.Saturday,
 		repo: repo,
 	}
 	todos, err := repo.Load()
@@ -40,10 +42,7 @@ func (t *TodoManager) Add(task string) error {
 		return err
 	}
 
-	todo, err := parseTask(task)
-	if err != nil {
-		return err
-	}
+	todo := t.parse(task)
 
 	todo.ID = t.MaxID() + 1
 	todo.UUID = guid.String()

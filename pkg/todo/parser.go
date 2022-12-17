@@ -1,45 +1,61 @@
 package todo
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+	"text/scanner"
 	"time"
+	"unicode"
 )
 
-func parseTask(task string) (Todo, error) {
-	parts := strings.Fields(task)
+func (tm *TodoManager) parse(task string) Todo {
+	var s scanner.Scanner
+	r := strings.NewReader(task)
+	s.Init(r)
 
-	var todo Todo
-	for _, p := range parts {
-		switch {
-		case strings.HasPrefix(p, "due:"):
-			fmt.Println("found due date, go parse")
-			parts := strings.Split(p, ":")
-			if len(parts) != 2 {
-				return Todo{}, errors.New("invalid due date format. use due:xxx")
-			}
-			todo.DueDate = parseDueDate(parts[1])
-		case strings.HasPrefix(p, "#"):
-			todo.Tags = append(todo.Tags, p)
-		case strings.HasPrefix(p, "pri"):
-			parts := strings.Split(p, ":")
-			if len(parts) != 2 {
-				return Todo{}, errors.New("invalid due date format. use due:xxx")
-			}
-			if err := todo.SetPriority(parts[1]); err != nil {
-				return Todo{}, err
-			}
-		case strings.HasPrefix(p, "@"):
-			fmt.Println("found context")
+	s.IsIdentRune = func(ch rune, i int) bool {
+		return ch == ':' && i > 0 ||
+			unicode.IsLetter(ch) || unicode.IsDigit(ch) && i > 0
+	}
+
+	t := Todo{
+		Task:        task,
+		Completed:   false,
+		CreatedAt:   time.Now().UTC(),
+		CompletedAt: time.Time{},
+	}
+	s.Next()
+	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
+		// If it's a special symbol with meaning for todo,
+		// read the next ident and parse into the struct
+		switch tok {
+		case '@':
+			_ = s.Scan()
+			// todo s.TokenText()
+		case '+':
+			_ = s.Scan()
+			t.Project = s.TokenText()
+		case '#':
+			_ = s.Scan()
+			fmt.Printf("Tags: %s\n", s.TokenText())
+		}
+
+		switch s.TokenText() {
+		case "due:":
+			_ = s.Scan()
+			due := tm.parseDueDate(s.TokenText())
+			t.DueDate = due
+		case "pri:":
+			_ = s.Scan()
+			t.SetPriority(s.TokenText())
 		}
 	}
-	todo.Task = task
-	return todo, nil
+
+	return t
 }
 
-func parseDueDate(d string) time.Time {
+func (tm *TodoManager) parseDueDate(d string) time.Time {
 	switch d {
 	case "tom", "tomorrow":
 		return time.Now().AddDate(0, 0, 1).UTC()
@@ -57,6 +73,11 @@ func parseDueDate(d string) time.Time {
 		return nextAfter(time.Friday)
 	case "sat", "saturday":
 		return nextAfter(time.Saturday)
+	case "eow":
+		// End of week
+		return endOfWeek(tm.eow)
+	case "eom":
+		// End of month
 	}
 
 	// If user specific a number, add this to the current date
@@ -73,4 +94,9 @@ func nextAfter(weekday time.Weekday) time.Time {
 		diff += 7
 	}
 	return time.Now().AddDate(0, 0, diff)
+}
+
+func endOfWeek(endDay time.Weekday) time.Time {
+	// Get next configured end of the week
+	return nextAfter(endDay)
 }

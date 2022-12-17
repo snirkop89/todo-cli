@@ -2,7 +2,6 @@ package todo
 
 import (
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -59,6 +58,8 @@ type Todo struct {
 	Completed   bool      `json:"done"`
 	Tags        []string  `json:"tags"`
 	Notes       []string  `json:"notes"`
+	Project     string    `json:"project"`
+	Context     string    `json:"context"`
 	DueDate     time.Time `json:"due_date"`
 	Priority    priority  `json:"priority"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -91,7 +92,7 @@ func (t *Todo) Unprioritze() {
 	}
 }
 
-func (t *Todo) SetPriority(pri string) error {
+func (t *Todo) SetPriority(pri string) {
 	switch strings.ToLower(pri) {
 	case "n", "none":
 		t.Priority = none
@@ -100,7 +101,6 @@ func (t *Todo) SetPriority(pri string) error {
 	case "u", "urgent":
 		t.Priority = urgent
 	default:
-		return errors.New("unknown priority")
+		t.Priority = none
 	}
-	return nil
 }

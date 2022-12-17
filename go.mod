@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/gofrs/uuid v4.3.1+incompatible
+	github.com/google/go-cmp v0.5.9
 	github.com/jedib0t/go-pretty/v6 v6.4.3
 	github.com/urfave/cli/v2 v2.23.5
 )
