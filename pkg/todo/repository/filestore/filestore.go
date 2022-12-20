@@ -40,7 +40,7 @@ func (store *FileStore) Load() ([]*todo.Todo, error) {
 }
 
 func (store *FileStore) Save(todos []*todo.Todo) error {
-	content, err := json.Marshal(todos)
+	content, err := json.MarshalIndent(todos, "", "  ")
 	if err != nil {
 		return err
 	}
