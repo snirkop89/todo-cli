@@ -5,15 +5,15 @@ Quick and easy cli to save tasks so you won't foget.
 Quick to add and access without inturrepting your flow.
 
 Features:
-- [ ] Print help
-- [ ] Add todo
+- [X] Print help
+- [X] Add todo
 - [ ] Add Filters
-- [ ] Add Priority
-- [ ] Add due dates
+- [X] Add Priority
+- [X] Add due dates
 - [ ] Move between category
 - [ ] Move between projects
-- [ ] List all todos
-- [ ] Remove todo
-- [ ] Complete todo
-- [ ] Add categories (#by using hash tags)
+- [X] List all todos
+- [X] Remove todo
+- [X] Complete todo
+- [X] Add categories (#by using hash tags)
 - [ ] Print by category
