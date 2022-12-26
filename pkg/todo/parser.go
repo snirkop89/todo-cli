@@ -15,7 +15,7 @@ func (tm *TodoManager) parse(task string) Todo {
 	s.Init(r)
 
 	s.IsIdentRune = func(ch rune, i int) bool {
-		return ch == ':' && i > 0 ||
+		return (ch == ':' && i > 0) ||
 			unicode.IsLetter(ch) || unicode.IsDigit(ch) && i > 0
 	}
 
@@ -25,7 +25,7 @@ func (tm *TodoManager) parse(task string) Todo {
 		CreatedAt:   time.Now().UTC(),
 		CompletedAt: time.Time{},
 	}
-	s.Next()
+
 	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
 		// If it's a special symbol with meaning for todo,
 		// read the next ident and parse into the struct
@@ -77,7 +77,7 @@ func (tm *TodoManager) parseDueDate(d string) time.Time {
 		// End of week
 		return endOfWeek(tm.eow)
 	case "eom":
-		// End of month
+		// TODO End of month
 	}
 
 	// If user specific a number, add this to the current date

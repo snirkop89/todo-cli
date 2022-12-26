@@ -68,7 +68,7 @@ func (t *TodoManager) Complete(id int) error {
 		}
 	}
 
-	return nil
+	return t.repo.Save(t.Todos)
 }
 
 // Edit allows to edit any property of a task.
@@ -101,15 +101,11 @@ func (t *TodoManager) Delete(ids ...int) error {
 }
 
 // List outputs the existing todos based on provided filters
-func (t *TodoManager) List(filters ...string) ([]*Todo, error) {
+func (t *TodoManager) List(filters ...keepFunc) ([]*Todo, error) {
 	todos := t.Todos
 
-	for _, filter := range filters {
-		if f, ok := filtersFuncs[filter]; ok {
-			todos = f(todos)
-		} else {
-			return nil, fmt.Errorf("unknonwn filter: %s", filter)
-		}
+	for _, f := range filters {
+		todos = Filter(todos, f)
 	}
 
 	return todos, nil

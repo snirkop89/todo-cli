@@ -1,55 +1,65 @@
 package todo
 
-import "strings"
+import (
+	"strings"
+)
 
-func (t *TodoManager) ParseFilters(arg string) []string {
-	var filters []string
+func (t *TodoManager) ParseFilters(args []string) []keepFunc {
+	var filters []keepFunc
 
-	opts := strings.Fields(arg)
-
-	// Expect status:!completed
-	for _, opt := range opts {
-		parts := strings.Split(opt, ":")
-		if len(parts) != 2 {
-			continue
-		}
-		filterType, value := parts[0], parts[1]
-		switch filterType {
-		case "status":
-			if strings.HasPrefix(value, "-") {
-				filters = append(filters, "notcompleted")
-			} else {
-				filters = append(filters, value)
-			}
+	for _, w := range args {
+		switch {
+		case strings.HasPrefix(w, "+"):
+			filters = append(filters, WithProject(strings.TrimPrefix(w, "+")))
+		case strings.HasPrefix(w, "@"):
+			filters = append(filters, WithContext(strings.TrimPrefix(w, "@")))
+		case strings.HasPrefix(w, "pri:"):
+			filters = append(filters, WithPriority(strings.TrimPrefix(w, "pri:")))
+		case strings.EqualFold(w, "done"):
+			filters = append(filters, Completed)
+		case strings.EqualFold(w, "todo"):
+			filters = append(filters, NotCompleted)
 		}
 	}
 
 	return filters
 }
 
-type filterFunc func([]*Todo) []*Todo
+type keepFunc func(t *Todo) bool
 
-var filtersFuncs = map[string]filterFunc{
-	"completed":    filterCompleted,
-	"notcompleted": filterNotCompleted,
-}
+func Filter(todos []*Todo, f keepFunc) []*Todo {
+	result := []*Todo{}
 
-var filterCompleted = func(todos []*Todo) []*Todo {
-	var filteredTodos []*Todo
 	for _, t := range todos {
-		if t.Completed {
-			filteredTodos = append(filteredTodos, t)
+		if f(t) {
+			result = append(result, t)
 		}
 	}
-	return filteredTodos
+	return result
 }
 
-var filterNotCompleted = func(todos []*Todo) []*Todo {
-	var filteredTodos []*Todo
-	for _, t := range todos {
-		if !t.Completed {
-			filteredTodos = append(filteredTodos, t)
-		}
+func Completed(t *Todo) bool {
+	return t.Completed
+}
+
+func NotCompleted(t *Todo) bool {
+	return !t.Completed
+}
+
+func WithProject(project string) func(t *Todo) bool {
+	return func(t *Todo) bool {
+		return t.Project == project
 	}
-	return filteredTodos
+}
+
+func WithContext(context string) func(t *Todo) bool {
+	return func(t *Todo) bool {
+		return t.Context == context
+	}
+}
+
+func WithPriority(pri string) func(t *Todo) bool {
+	return func(t *Todo) bool {
+		return strings.EqualFold(t.Priority.String(), pri)
+	}
 }

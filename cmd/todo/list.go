@@ -26,7 +26,7 @@ func listCmd(tm *todo.TodoManager) *cli.Command {
 }
 
 func listAction(tm *todo.TodoManager, args []string) error {
-	filters := tm.ParseFilters(strings.Join(args, " "))
+	filters := tm.ParseFilters(args)
 
 	todos, err := tm.List(filters...)
 	if err != nil {
