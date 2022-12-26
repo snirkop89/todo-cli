@@ -7,7 +7,7 @@ Quick to add and access without inturrepting your flow.
 Features:
 - [X] Print help
 - [X] Add todo
-- [ ] Add Filters
+- [X] Add Filters
 - [X] Add Priority
 - [X] Add due dates
 - [ ] Move between category

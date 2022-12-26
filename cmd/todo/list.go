@@ -16,6 +16,15 @@ func listCmd(tm *todo.TodoManager) *cli.Command {
 		Name:    "list",
 		Aliases: []string{"ls"},
 		Usage:   "List all your tasks",
+		Description: `Show your todos and apply filters, if any.
+todo ls [filter name ...filter]
+
+Available Filters:
++project_name     Show tasks belong to a project
+@context          Show tasks belong to a context
+pri:priority      Show tasks of specific priority
+done              Show completed tasks
+todo              Show yet to be completed tasks`,
 		Action: func(ctx *cli.Context) error {
 
 			return listAction(tm, ctx.Args().Slice())
