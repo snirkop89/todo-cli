@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/jedib0t/go-pretty/v6/text"
+	"github.com/cheynewallace/tabby"
 	"github.com/snirkop89/todo-cli/pkg/todo"
 	"github.com/urfave/cli/v2"
 )
@@ -47,14 +45,8 @@ func listAction(tm *todo.TodoManager, args []string) error {
 		return nil
 	}
 
-	tw := table.NewWriter()
-	tw.SetOutputMirror(os.Stdout)
-	tw.AppendHeader(table.Row{"ID", "Done?", "Task", "Tags", "Due At", "Created At", "Completed At", "Priority"})
-
-	tw.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 2, Align: text.AlignCenter},
-		{Number: 6, Align: text.AlignCenter},
-	})
+	tw := tabby.New()
+	tw.AddHeader("ID", "Done?", "Task", "Tags", "Due At", "Created At", "Completed At", "Priority")
 
 	for _, t := range todos {
 		prefix := ""
@@ -70,8 +62,10 @@ func listAction(tm *todo.TodoManager, args []string) error {
 		if !t.DueDate.IsZero() {
 			dueDate = t.DueDate.Local().Format(timeFormat)
 		}
-		tw.AppendRow(table.Row{fmt.Sprintf("%d", t.ID), prefix, t.Task, tags, dueDate, t.CreatedAt.Local().Format(timeFormat), completedAt, t.Priority})
+
+		tw.AddLine(fmt.Sprintf("%d", t.ID), prefix, t.Task, tags, dueDate, t.CreatedAt.Local().Format(timeFormat), completedAt, t.Priority)
 	}
-	tw.Render()
+
+	tw.Print()
 	return nil
 }
