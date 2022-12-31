@@ -3,6 +3,7 @@ package todo
 import (
 	"fmt"
 	"io"
+	"sort"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -101,11 +102,21 @@ func (t *TodoManager) Delete(ids ...int) error {
 }
 
 // List outputs the existing todos based on provided filters
-func (t *TodoManager) List(filters ...keepFunc) ([]*Todo, error) {
+func (t *TodoManager) List(sortBy string, filters ...keepFunc) ([]*Todo, error) {
 	todos := t.Todos
 
 	for _, f := range filters {
 		todos = Filter(todos, f)
+	}
+
+	switch sortBy {
+	case "priority":
+		sort.Sort(ByPriority(todos))
+	case "created":
+		sort.Sort(ByCreated(todos))
+	case "due":
+		sort.Sort(ByDue(todos))
+
 	}
 
 	return todos, nil
@@ -171,6 +182,54 @@ func (t *TodoManager) countPending() int {
 	return pending
 }
 
-// TODO show statistics:
-// total todos, done, pending, overdue
-func (t *TodoManager) Stats() {}
+type Stats struct {
+	Total   int
+	Done    int
+	Pending int
+	Overdue int
+}
+
+// Stats returns the number of total todos, done, pending, overdue
+func (t *TodoManager) Stats() Stats {
+	var stats Stats
+
+	stats.Total = len(t.Todos)
+
+	for _, t := range t.Todos {
+		if t.Completed {
+			stats.Done++
+		} else {
+			stats.Pending++
+		}
+
+		if !t.DueDate.IsZero() && t.DueDate.Before(time.Now()) {
+			stats.Overdue++
+		}
+	}
+
+	return stats
+}
+
+type ByPriority []*Todo
+
+func (bp ByPriority) Len() int      { return len(bp) }
+func (bp ByPriority) Swap(i, j int) { bp[i], bp[j] = bp[j], bp[i] }
+func (bp ByPriority) Less(i, j int) bool {
+	return bp[i].Priority < bp[j].Priority
+}
+
+type ByCreated []*Todo
+
+func (bc ByCreated) Len() int      { return len(bc) }
+func (bc ByCreated) Swap(i, j int) { bc[i], bc[j] = bc[j], bc[i] }
+func (bc ByCreated) Less(i, j int) bool {
+	return bc[i].CreatedAt.Before(bc[j].CreatedAt)
+}
+
+type ByDue []*Todo
+
+func (bd ByDue) Len() int      { return len(bd) }
+func (bd ByDue) Swap(i, j int) { bd[i], bd[j] = bd[j], bd[i] }
+func (bd ByDue) Less(i, j int) bool {
+	return bd[i].DueDate.Before(bd[j].DueDate)
+}

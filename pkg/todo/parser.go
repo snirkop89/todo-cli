@@ -9,6 +9,7 @@ import (
 	"unicode"
 )
 
+// TODO: if there is not space after keyword, parsing doesn't work
 func (tm *TodoManager) parse(task string) Todo {
 	var s scanner.Scanner
 	r := strings.NewReader(task)

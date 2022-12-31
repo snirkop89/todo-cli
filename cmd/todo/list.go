@@ -14,6 +14,13 @@ func listCmd(tm *todo.TodoManager) *cli.Command {
 		Name:    "list",
 		Aliases: []string{"ls"},
 		Usage:   "List all your tasks",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "sort",
+				Usage:    "--sort [priority|created|due]",
+				Required: false,
+			},
+		},
 		Description: `Show your todos and apply filters, if any.
 todo ls [filter name ...filter]
 
@@ -24,18 +31,18 @@ pri:priority      Show tasks of specific priority
 done              Show completed tasks
 todo              Show yet to be completed tasks`,
 		Action: func(ctx *cli.Context) error {
-
-			return listAction(tm, ctx.Args().Slice())
+			sortBy := ctx.String("sort")
+			return listAction(tm, ctx.Args().Slice(), sortBy)
 		},
 	}
 
 	return cmd
 }
 
-func listAction(tm *todo.TodoManager, args []string) error {
+func listAction(tm *todo.TodoManager, args []string, sortBy string) error {
 	filters := tm.ParseFilters(args)
 
-	todos, err := tm.List(filters...)
+	todos, err := tm.List(sortBy, filters...)
 	if err != nil {
 		return err
 	}

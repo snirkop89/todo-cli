@@ -40,6 +40,7 @@ func run() error {
 		deleteCmd(tm),
 		editCmd(tm),
 		listCmd(tm),
+		statsCmd(tm),
 	}
 
 	return app.Run(os.Args)
